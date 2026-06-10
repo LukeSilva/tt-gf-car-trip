@@ -10,7 +10,9 @@ module tb ();
   initial begin
     $dumpfile("tb.fst");
     $dumpvars(0, tb);
+`ifndef VERILATOR
     #1;
+`endif
   end
 
   // Wire up the inputs and outputs:
@@ -28,7 +30,7 @@ module tb ();
 `endif
 
   // Replace tt_um_example with your module name:
-  tt_um_example user_project (
+  tt_um_LukeSilva_cartrip user_project (
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST

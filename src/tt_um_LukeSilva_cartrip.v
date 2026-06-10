@@ -48,11 +48,48 @@ module tt_um_LukeSilva_cartrip(
     .vpos(pix_y)
   );
 
+  wire [6:0] ascii_code;
+  wire [6:0] code;
+
+  reg [255:0] msgs [3:0];
+  initial begin
+    msgs [0] = "olleH";
+    msgs [1] = "ouy era woH";
+    msgs [2] = "si eman yM";
+    msgs [3] = "avliS ekuL";
+  end
+
+  wire [255:0] msg = msgs[counter[9:8]];
+  wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
+
+  assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
+  wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
+  assign code = !video_active ? 0 :
+                (pix_y[9:7] == 3'h0) ? ascii_code :
+                (pix_x[8:4] < max) ?  msg_code:
+                7'h0;
+
+  wire font_pixel;
+  font_data font_rom
+  (
+    .code(code),
+    .y(code != 0 ? pix_y[3:1] : 0),
+    .x(code != 0 ? pix_x[3:1] : 0),
+    .pixel(font_pixel)
+  );
+
+
+  wire [5:0] font_color;
+  assign font_color = font_pixel ? 6'b111111 : 6'h00;
+
   wire [9:0] moving_x = pix_x + counter;
 
-  assign R = video_active ? {moving_x[5], pix_y[2]} : 2'b00;
-  assign G = video_active ? {moving_x[6], pix_y[2]} : 2'b00;
-  assign B = video_active ? {moving_x[7], pix_y[5]} : 2'b00;
+  wire [5:0] color;
+  assign color = font_color;
+
+  assign R = video_active ? color[5:4] : 2'b00;
+  assign G = video_active ? color[3:2] : 2'b00;
+  assign B = video_active ? color[1:0] : 2'b00;
 
   always @(posedge vsync, negedge rst_n) begin
     if (~rst_n) begin
