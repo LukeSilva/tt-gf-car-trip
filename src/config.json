@@ -19,6 +19,7 @@
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
   "CLOCK_PERIOD": 39,
 
+  "SYNTH_AUTONAME": "true",
   "RUN_POST_GRT_DESIGN_REPAIR": "true",
   "RUN_POST_GPL_DESIGN_REPAIR": "true",
 

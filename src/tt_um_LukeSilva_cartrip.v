@@ -34,7 +34,7 @@ module tt_um_LukeSilva_cartrip(
   assign uio_oe  = 0;
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in};
+  wire _unused_ok = &{ena, ui_in, uio_in, font_pixel, font_color};
 
   reg [9:0] counter;
 
@@ -80,12 +80,23 @@ module tt_um_LukeSilva_cartrip(
 
 
   wire [5:0] font_color;
-  assign font_color = font_pixel ? 6'b111111 : 6'h00;
+  // assign font_color = font_pixel ? 6'b111111 : 6'h00;
+  assign font_color = 6'h3f;
 
-  wire [9:0] moving_x = pix_x + counter;
+  wire [9:0] moving_x = pix_x - 2* counter;
+
+  wire [5:0] road_color;
+  assign road_color = (pix_y >= 10'd296 && pix_y <= 10'd304 && -moving_x[5]) ? 6'h3f : 6'b010101;
+
+
+  wire [5:0] bg_color;
+  assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
+                    (pix_y >= 10'd280 && pix_y <= 320) ? road_color :
+                    (pix_y < 10'd360) ? 6'b101101 :
+                    6'h0;
 
   wire [5:0] color;
-  assign color = font_color;
+  assign color = bg_color;
 
   assign R = video_active ? color[5:4] : 2'b00;
   assign G = video_active ? color[3:2] : 2'b00;
