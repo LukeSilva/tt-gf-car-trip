@@ -14,7 +14,7 @@ jobs:
           submodules: recursive
 
       - name: Build GDS
-        uses: TinyTapeout/tt-gds-action@ttgf26a
+        uses: LukeSilva/tt-gds-action@name_gds_logs
         with:
           pdk: gf180mcuD
 
@@ -41,7 +41,7 @@ jobs:
     needs: gds
     runs-on: ubuntu-24.04
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
     steps:
       - uses: TinyTapeout/tt-gds-action/viewer@ttgf26a
