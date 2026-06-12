@@ -88,12 +88,24 @@ module tt_um_LukeSilva_cartrip(
   wire [5:0] road_color;
   assign road_color = (pix_y >= 10'd296 && pix_y <= 10'd304 && -moving_x[5]) ? 6'h3f : 6'b010101;
 
+`define TEXT_LEFT_BOUND 9'd2
+`define TEXT_RIGHT_BOUND 9'd317
+`define TEXT_TOP_BOUND 9'd182
+`define TEXT_BOTTOM_BOUND 9'd237
+  wire x_out_of_border;
+  assign x_out_of_border = (pix_x[9:1] < `TEXT_LEFT_BOUND) || (pix_x[9:1] > `TEXT_RIGHT_BOUND);
+  wire y_out_of_border;
+  assign y_out_of_border = (pix_y[9:1] < `TEXT_TOP_BOUND) || (pix_y[9:1] > `TEXT_BOTTOM_BOUND);
+  wire [5:0] text_bg;
+
+  assign text_bg = (((pix_y[9:1] == `TEXT_TOP_BOUND) || (pix_y[9:1] == `TEXT_BOTTOM_BOUND)) && !x_out_of_border) ? 6'h3f :
+                    (((pix_x[9:1] == `TEXT_LEFT_BOUND) || (pix_x[9:1] == `TEXT_RIGHT_BOUND)) && !y_out_of_border) ? 6'h3f : 6'h0;
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
                     (pix_y >= 10'd280 && pix_y <= 320) ? road_color :
                     (pix_y < 10'd360) ? 6'b101101 :
-                    6'h0;
+                    text_bg;
 
   wire [5:0] color;
   assign color = bg_color;
