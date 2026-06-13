@@ -34,7 +34,7 @@ module tt_um_LukeSilva_cartrip(
   assign uio_oe  = 0;
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in, font_pixel, font_color};
+  wire _unused_ok = &{ena, ui_in, uio_in, font_color};
 
   reg [9:0] counter;
 
@@ -64,24 +64,46 @@ module tt_um_LukeSilva_cartrip(
 
   assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
   wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
-  assign code = !video_active ? 0 :
-                (pix_y[9:7] == 3'h0) ? ascii_code :
-                (pix_x[8:4] < max) ?  msg_code:
-                7'h0;
+  assign code =
+                // (pix_y[9:7] == 3'h0) ? ascii_code :
+                // (pix_x[8:4] < max) ?  msg_code:
+                {~pix_y[6], pix_y[5:4], pix_x[7:4]};
+                // 7'h0;
 
-  wire font_pixel;
-  font_data font_rom
+
+  reg [6:0] rom_code;
+  reg [2:0] rom_y;
+  reg [2:0] rom_x;
+  reg [2:0] r_rom_x;
+  always @(posedge clk)
+  begin
+    rom_code <= code;
+    rom_y <= pix_y[3:1];
+    rom_x <= pix_x[3:1];
+    r_rom_x <= rom_x;
+  end
+
+  wire [5:0] font_row;
+  rom font_rom
   (
-    .code(code),
-    .y(code != 0 ? pix_y[3:1] : 0),
-    .x(code != 0 ? pix_x[3:1] : 0),
-    .pixel(font_pixel)
+    .code(rom_code),
+    .y(rom_y),
+    .x(0),
+    .row(font_row)
   );
+
+  reg [5:0] r_font;
+  reg r_r_font;
+  always @(posedge clk)
+  begin
+    r_font <= font_row;
+    r_r_font <= r_font[r_rom_x];
+  end
 
 
   wire [5:0] font_color;
-  // assign font_color = font_pixel ? 6'b111111 : 6'h00;
-  assign font_color = 6'h3f;
+  assign font_color = r_r_font ? 6'b111111 : 6'h00;
+  //assign font_color = 6'h3f;
 
   wire [9:0] moving_x = pix_x - 2* counter;
 
@@ -94,12 +116,35 @@ module tt_um_LukeSilva_cartrip(
 `define TEXT_BOTTOM_BOUND 9'd237
   wire x_out_of_border;
   assign x_out_of_border = (pix_x[9:1] < `TEXT_LEFT_BOUND) || (pix_x[9:1] > `TEXT_RIGHT_BOUND);
+  wire x_on_border;
+  assign x_on_border = ((pix_x[9:1] == `TEXT_LEFT_BOUND) || (pix_x[9:1] == `TEXT_RIGHT_BOUND));
   wire y_out_of_border;
   assign y_out_of_border = (pix_y[9:1] < `TEXT_TOP_BOUND) || (pix_y[9:1] > `TEXT_BOTTOM_BOUND);
+  wire y_on_border;
+  assign y_on_border = ((pix_y[9:1] == `TEXT_TOP_BOUND) || (pix_y[9:1] == `TEXT_BOTTOM_BOUND));
+
+  wire in_msg_box;
+  assign in_msg_box = !x_on_border && !x_out_of_border && !y_on_border && !y_out_of_border;
+
   wire [5:0] text_bg;
 
-  assign text_bg = (((pix_y[9:1] == `TEXT_TOP_BOUND) || (pix_y[9:1] == `TEXT_BOTTOM_BOUND)) && !x_out_of_border) ? 6'h3f :
-                    (((pix_x[9:1] == `TEXT_LEFT_BOUND) || (pix_x[9:1] == `TEXT_RIGHT_BOUND)) && !y_out_of_border) ? 6'h3f : 6'h0;
+  assign text_bg = (y_on_border && !x_out_of_border) ? 6'h3f :
+                    (x_on_border && !y_out_of_border) ? 6'h3f : 6'h0;
+
+
+  reg [5:0] car_palette[0:7];
+  wire [2:0] car_data[0:2047];
+  initial begin
+    $readmemh("../data/car_palette.hex", car_palette);
+    $readmemh("../data/car_image.hex", car_data);
+    // $readmemh("../data/rainbow_b.hex", rainbow_b);
+  end
+
+  wire [2:0] car_idx;
+  assign car_idx = car_data[{pix_y[4:0], pix_x[5:0]}];
+
+  wire [5:0] car_color;
+  assign car_color = car_palette[car_idx];
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
@@ -108,7 +153,9 @@ module tt_um_LukeSilva_cartrip(
                     text_bg;
 
   wire [5:0] color;
-  assign color = bg_color;
+  assign color = (ui_in[1]) ? car_color :
+                 (in_msg_box || ui_in[0]) ? font_color : bg_color;
+
 
   assign R = video_active ? color[5:4] : 2'b00;
   assign G = video_active ? color[3:2] : 2'b00;
