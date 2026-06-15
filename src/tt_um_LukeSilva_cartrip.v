@@ -5,6 +5,12 @@
 
 `default_nettype none
 
+
+(* blackbox *) (* keep *)
+module tt_gf_cartrip_lg_nameplate ();
+endmodule
+
+
 module tt_um_LukeSilva_cartrip(
   input  wire [7:0] ui_in,    // Dedicated inputs
   output wire [7:0] uo_out,   // Dedicated outputs
@@ -16,6 +22,7 @@ module tt_um_LukeSilva_cartrip(
   input  wire       rst_n     // reset_n - low to reset
 );
 
+  tt_gf_cartrip_lg_nameplate nameplate();
   // VGA signals
   wire hsync;
   wire vsync;

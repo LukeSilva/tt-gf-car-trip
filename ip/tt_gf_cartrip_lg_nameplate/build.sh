@@ -1,0 +1,3 @@
+mkdir -p gds
+python3 make_gds.py name_plate.png gds/tt_gf_cartrip_lg_nameplate.gds --cellname tt_gf_cartrip_lg_nameplate --invert --merge --pixel-size 0.56 --width 23 --height 21 --foreground "34/0" "36/0" "42/0" "46/0" --boundary "0/0" "152/5"
+docker run --rm -v /zpool/programming/chip/pdk:/pdk -e PDK=gf180mcuD -e PDK_ROOT=/pdk/gf/ciel/gf180mcu/versions/54435919abffb937387ec956209f9cf5fd2dfbee -v $(pwd):/project ghcr.io/librelane/librelane:3.0.3 sh -c "klayout -b -zz -r /pdk/gf/ciel/gf180mcu/versions/54435919abffb937387ec956209f9cf5fd2dfbee/gf180mcuD/libs.tech/klayout/tech/drc/gf180mcu.drc -rd input=/project/gds/tt_gf_cartrip_lg_nameplate.gds -rd report=report.lyrdb -rd feol=false -rd beol=true"
