@@ -147,11 +147,20 @@ module tt_um_LukeSilva_cartrip(
     // $readmemh("../data/rainbow_b.hex", rainbow_b);
   end
 
+
+  wire [9:0] car_x;
+  assign car_x = pix_x - 10'd384 - {4'd0,1'b0, {5{counter[5]}} ^ counter[4:0]};
+  wire [9:0] car_y;
+  assign car_y = pix_y - 10'd240;
+
   wire [2:0] car_idx;
-  assign car_idx = car_data[{pix_y[4:0], pix_x[5:0]}];
+
+  assign car_idx = car_data[{car_y[5:1], car_x[6:1]}];
 
   wire [5:0] car_color;
   assign car_color = car_palette[car_idx];
+  wire car_valid;
+  assign car_valid = car_color != 6'h33 && car_x < 10'd128 && car_y < 10'd64;
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
@@ -160,7 +169,8 @@ module tt_um_LukeSilva_cartrip(
                     text_bg;
 
   wire [5:0] color;
-  assign color = (ui_in[1]) ? car_color :
+  assign color = (ui_in[1] && car_valid) ? car_color :
+                (pix_y[9:6] == 4'b0110) ? (counter[pix_x[7:4]] ? 6'h3f : 0) :
                  (in_msg_box || ui_in[0]) ? font_color : bg_color;
 
 
