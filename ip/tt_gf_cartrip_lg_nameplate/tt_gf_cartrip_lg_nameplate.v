@@ -1,0 +1,2 @@
+module tt_gf_cartrip_lg_nameplate;
+endmodule
