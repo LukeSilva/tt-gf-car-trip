@@ -83,12 +83,19 @@ module tt_um_LukeSilva_cartrip(
   reg [2:0] rom_y;
   reg [2:0] rom_x;
   reg [2:0] r_rom_x;
-  always @(posedge clk)
+  always @(posedge clk or negedge rst_n)
   begin
-    rom_code <= code;
-    rom_y <= pix_y[3:1];
-    rom_x <= pix_x[3:1];
-    r_rom_x <= rom_x;
+    if (!rst_n) begin
+        rom_code <= 0;
+        rom_y <= 0;
+        rom_x <= 0;
+        r_rom_x <= 0;
+    end else begin
+        rom_code <= code;
+        rom_y <= pix_y[3:1];
+        rom_x <= pix_x[3:1];
+        r_rom_x <= rom_x;
+    end
   end
 
   wire [5:0] font_row;
@@ -101,10 +108,18 @@ module tt_um_LukeSilva_cartrip(
 
   reg [5:0] r_font;
   reg r_r_font;
-  always @(posedge clk)
+  always @(posedge clk or negedge rst_n)
   begin
-    r_font <= font_row;
-    r_r_font <= r_font[r_rom_x];
+    if (!rst_n) begin
+        r_font <= 0;
+        r_r_font <= 0;
+    end else begin
+        r_font <= font_row;
+        if (r_rom_x < 3'd6)
+            r_r_font <= r_font[r_rom_x];
+        else
+            r_r_font <= 0;
+    end
   end
 
 
