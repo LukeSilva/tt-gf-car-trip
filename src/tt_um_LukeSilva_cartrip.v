@@ -167,6 +167,14 @@ module tt_um_LukeSilva_cartrip(
   wire car_valid;
   assign car_valid = car_color != 6'h33 && car_x < 9'd64 && car_y < 9'd32;
 
+  reg r_car_valid;
+  reg [5:0] r_car_color;
+  always @(posedge clk)
+  begin
+    r_car_valid <= car_valid;
+    r_car_color <= car_color;
+  end
+
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
                     (pix_y >= 10'd280 && pix_y <= 320) ? road_color :
@@ -174,7 +182,7 @@ module tt_um_LukeSilva_cartrip(
                     text_bg;
 
   wire [5:0] color;
-  assign color = (car_valid) ? car_color :
+  assign color = (r_car_valid) ? r_car_color :
                  (in_msg_box || ui_in[0]) ? font_color : bg_color;
 
 
