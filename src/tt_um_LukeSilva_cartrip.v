@@ -149,22 +149,23 @@ module tt_um_LukeSilva_cartrip(
 
 
 
-  wire [9:0] car_x;
+  wire [8:0] car_x;
   wire [5:0] car_counter = counter[6:1];
 
         //int val = ((i&0x1f) | (b5 * 0x1f)) ^ (b6 * 0x1f);
-  assign car_x = pix_x - 10'd384 - {6'd0,(car_counter[3:0] | {4{car_counter[4]}}) ^ {4{car_counter[5]}}};
-  wire [9:0] car_y;
-  assign car_y = pix_y - 10'd240;
+  assign car_x = pix_x[9:1] - 9'd192 - {5'd0,(car_counter[3:0] | {4{car_counter[4]}}) ^ {4{car_counter[5]}}};
+
+  wire [8:0] car_y;
+  assign car_y = pix_y[9:1] - 9'd120;
 
   wire [2:0] car_idx;
 
-  assign car_idx = car_data[{car_y[5:1], car_x[6:1]}];
+  assign car_idx = car_data[{car_y[4:0], car_x[5:0]}];
 
   wire [5:0] car_color;
   assign car_color = car_palette[car_idx];
   wire car_valid;
-  assign car_valid = car_color != 6'h33 && car_x < 10'd128 && car_y < 10'd64;
+  assign car_valid = car_color != 6'h33 && car_x < 9'd64 && car_y < 9'd32;
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
@@ -174,7 +175,6 @@ module tt_um_LukeSilva_cartrip(
 
   wire [5:0] color;
   assign color = (car_valid) ? car_color :
-                (pix_y[9:6] == 4'b0110) ? (counter[pix_x[7:4]] ? 6'h3f : 0) :
                  (in_msg_box || ui_in[0]) ? font_color : bg_color;
 
 
