@@ -1,4 +1,4 @@
-module rom (input wire [6:0] code, input wire [2:0] y, input wire [2:0] x, output wire [5:0] row);
+module rom (input wire [6:0] code, input wire [2:0] y, output wire [5:0] row);
 
 reg [5:0] font[127:0][7:0];
 initial begin

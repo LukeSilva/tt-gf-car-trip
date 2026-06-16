@@ -5,10 +5,11 @@
 
 `default_nettype none
 
-
+/* verilator lint_off DECLFILENAME */
 (* blackbox *) (* keep *)
 module tt_gf_cartrip_lg_nameplate ();
 endmodule
+/* verilator lint_on DECLFILENAME */
 
 
 module tt_um_LukeSilva_cartrip(
@@ -41,7 +42,7 @@ module tt_um_LukeSilva_cartrip(
   assign uio_oe  = 0;
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in, font_color};
+  wire _unused_ok = &{ena, ui_in, uio_in, font_color, ascii_code, msg};
 
   reg [9:0] counter;
 
@@ -67,10 +68,10 @@ module tt_um_LukeSilva_cartrip(
   end
 
   wire [255:0] msg = msgs[counter[9:8]];
-  wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
+  // wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
 
   assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
-  wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
+  // wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
   assign code =
                 // (pix_y[9:7] == 3'h0) ? ascii_code :
                 // (pix_x[8:4] < max) ?  msg_code:
@@ -95,7 +96,6 @@ module tt_um_LukeSilva_cartrip(
   (
     .code(rom_code),
     .y(rom_y),
-    .x(0),
     .row(font_row)
   );
 
@@ -112,7 +112,7 @@ module tt_um_LukeSilva_cartrip(
   assign font_color = r_r_font ? 6'b111111 : 6'h00;
   //assign font_color = 6'h3f;
 
-  wire [9:0] moving_x = pix_x - 2* counter;
+  wire [9:0] moving_x = pix_x - 4* counter;
 
   wire [5:0] road_color;
   assign road_color = (pix_y >= 10'd296 && pix_y <= 10'd304 && -moving_x[5]) ? 6'h3f : 6'b010101;
@@ -148,8 +148,12 @@ module tt_um_LukeSilva_cartrip(
   end
 
 
+
   wire [9:0] car_x;
-  assign car_x = pix_x - 10'd384 - {4'd0,1'b0, {5{counter[5]}} ^ counter[4:0]};
+  wire [5:0] car_counter = counter[6:1];
+
+        //int val = ((i&0x1f) | (b5 * 0x1f)) ^ (b6 * 0x1f);
+  assign car_x = pix_x - 10'd384 - {6'd0,(car_counter[3:0] | {4{car_counter[4]}}) ^ {4{car_counter[5]}}};
   wire [9:0] car_y;
   assign car_y = pix_y - 10'd240;
 
@@ -169,7 +173,7 @@ module tt_um_LukeSilva_cartrip(
                     text_bg;
 
   wire [5:0] color;
-  assign color = (ui_in[1] && car_valid) ? car_color :
+  assign color = (car_valid) ? car_color :
                 (pix_y[9:6] == 4'b0110) ? (counter[pix_x[7:4]] ? 6'h3f : 0) :
                  (in_msg_box || ui_in[0]) ? font_color : bg_color;
 

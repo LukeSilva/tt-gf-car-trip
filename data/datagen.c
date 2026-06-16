@@ -32,7 +32,7 @@ struct Font empty = {
 int main() {
 
     // int i = 0;
-    printf("module rom (input wire [6:0] code, input wire [2:0] y, input wire [2:0] x, output wire [5:0] row);\n");
+    printf("module rom (input wire [6:0] code, input wire [2:0] y, output wire [5:0] row);\n");
     printf("\nreg [5:0] font[127:0][7:0];\n");
     printf("initial begin\n");
     for (int c = 0; c < 128; ++c) {
