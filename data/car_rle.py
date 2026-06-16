@@ -2,7 +2,7 @@ from itertools import groupby
 
 from PIL import Image
 
-img = Image.open("car.png")
+img = Image.open("car_wide.png")
 
 rgb_img = img.convert("RGB")
 
@@ -168,7 +168,40 @@ print(hex_palette)
 with open("car_palette.hex", "w") as f:
     f.write(hex_palette)
 
-image = "\n".join([" ".join([hex(palette.index(c))[2:] for c in r]) for r in rows])
+
+def find_palette_for_row(row, palettes):
+    ok = [True] * len(palettes)
+    print(row)
+    for cr in row:
+        print(ok, cr)
+        for i in range(len(palettes)):
+            p = palettes[i]
+            if cr not in p:
+                ok[i] = False
+    return ok.index(True)
+
+
+l_palettes = list(palettes)
+row_palette_id = [find_palette_for_row(r, list(l_palettes)) for r in rows]
+print(row_palette_id)
+with open("car_row_palette_id.hex", "w") as f:
+    f.write(" ".join([hex(palette_id)[2:] for palette_id in row_palette_id]))
+
+int_palette = [
+    ((r & 3) << 4) | ((g & 3) << 2) | (b & 3) for p in palettes for r, g, b in p
+]
+hex_palette = " ".join([hex(c)[2:] for c in int_palette])
+print(hex_palette)
+with open("car_palettes.hex", "w") as f:
+    f.write(hex_palette)
+
+
+image = "\n".join(
+    [
+        " ".join([hex(l_palettes[row_palette_id[i]].index(c))[2:] for c in rows[i]])
+        for i in range(len(rows))
+    ]
+)
 print(image)
 
 with open("car_image.hex", "w") as f:

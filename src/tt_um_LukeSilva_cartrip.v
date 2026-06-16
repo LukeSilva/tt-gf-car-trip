@@ -139,10 +139,12 @@ module tt_um_LukeSilva_cartrip(
                     (x_on_border && !y_out_of_border) ? 6'h3f : 6'h0;
 
 
-  reg [5:0] car_palette[0:7];
-  wire [2:0] car_data[0:2047];
+  reg [5:0] car_palettes[0:15];
+  reg [1:0] car_palette_ids[0:31];
+  reg [1:0] car_data[0:2047];
   initial begin
-    $readmemh("../data/car_palette.hex", car_palette);
+    $readmemh("../data/car_palettes.hex", car_palettes);
+    $readmemh("../data/car_row_palette_id.hex", car_palette_ids);
     $readmemh("../data/car_image.hex", car_data);
     // $readmemh("../data/rainbow_b.hex", rainbow_b);
   end
@@ -158,12 +160,15 @@ module tt_um_LukeSilva_cartrip(
   wire [8:0] car_y;
   assign car_y = pix_y[9:1] - 9'd120;
 
-  wire [2:0] car_idx;
+  wire [1:0] car_idx;
 
   assign car_idx = car_data[{car_y[4:0], car_x[5:0]}];
 
+  wire [1:0] car_palette_id;
+  assign car_palette_id = car_palette_ids[car_y[4:0]];
+
   wire [5:0] car_color;
-  assign car_color = car_palette[car_idx];
+  assign car_color = car_palettes[{car_palette_id, car_idx}];
   wire car_valid;
   assign car_valid = car_color != 6'h33 && car_x < 9'd64 && car_y < 9'd32;
 
