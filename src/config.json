@@ -39,7 +39,9 @@
       "lef": [
         "dir::../ip/tt_gf_cartrip_lg_nameplate/lef/tt_gf_cartrip_lg_nameplate.lef"
       ],
-      "vh": ["dir::../ip/gf180mcu_name_plate/vh/gf180mcu_name_plate.v"]
+      "vh": [
+        "dir::../ip/tt_gf_cartrip_lg_nameplate/tt_gf_cartrip_lg_nameplate.v"
+      ]
     }
   },
   "IGNORE_DISCONNECTED_MODULES": ["tt_gf_cartrip_lg_nameplate", "nameplate"],
