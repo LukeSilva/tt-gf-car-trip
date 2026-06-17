@@ -27,7 +27,7 @@ module tt_um_LukeSilva_cartrip(
   wire [1:0] B;
   wire video_active;
   wire [9:0] pix_x;
-  (* keep *) wire [9:0] pix_y; // Yosys might be optimizing out pix_y[0]?
+  wire [9:0] pix_y;
 
   // TinyVGA PMOD
   assign uo_out = {hsync, B[0], G[0], R[0], vsync, B[1], G[1], R[1]};
@@ -37,7 +37,7 @@ module tt_um_LukeSilva_cartrip(
   assign uio_oe  = 0;
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in, font_color, ascii_code, msg};
+  wire _unused_ok = &{ena, ui_in, uio_in, font_color, ascii_code};
 
   reg [9:0] counter;
 
@@ -54,6 +54,7 @@ module tt_um_LukeSilva_cartrip(
   wire [6:0] ascii_code;
   wire [6:0] code;
 
+/*
   reg [255:0] msgs [3:0];
   initial begin
     msgs [0] = "olleH";
@@ -61,8 +62,9 @@ module tt_um_LukeSilva_cartrip(
     msgs [2] = "si eman yM";
     msgs [3] = "avliS ekuL";
   end
+  */
 
-  wire [255:0] msg = msgs[counter[9:8]];
+//  wire [255:0] msg = msgs[counter[9:8]];
   // wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
 
   assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
@@ -212,8 +214,5 @@ module tt_um_LukeSilva_cartrip(
       counter <= counter + 1;
     end
   end
-
-  // Suppress unused signals warning
-  wire _unused_ok_ = &{moving_x};
 
 endmodule

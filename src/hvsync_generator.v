@@ -56,11 +56,12 @@ module hvsync_generator(clk, reset, hsync, vsync, display_on, hpos, vpos);
     vsync <= ~(vpos>=V_SYNC_START && vpos<=V_SYNC_END);
     if (reset)
         vpos <= 0;
-    else if(hmaxxed)
+    else if(hmaxxed) begin
       if (vmaxxed)
         vpos <= 0;
       else
-        vpos <= vpos + 1;
+        vpos <= vpos + 10'd1;
+    end
   end
 
   // display_on is set when beam is in "safe" visible frame
