@@ -57,7 +57,7 @@ module tt_um_LukeSilva_cartrip(
 
   // wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
 
-  reg [6:0] msg_data[0:41*8-1];
+  reg [6:0] msg_data[0:32*8-1];
   reg [6:0] words_data[0:1023];
   initial begin
     $readmemh("../data/words.hex", words_data);
@@ -82,7 +82,7 @@ module tt_um_LukeSilva_cartrip(
     else if (video_active && pix_x[3:0] == 4'he && end_of_word)
         r_cur_letter <= 0;
   wire [6:0] word;
-  assign word = msg_data[{counter[0], pix_y[8:4], word_idx}];
+  assign word = msg_data[{pix_y[8:4], word_idx}];
   wire [6:0] word_code;
   assign word_code = word != 7'h40 ? words_data[{word[5:0],r_cur_letter}] : 0;
 
