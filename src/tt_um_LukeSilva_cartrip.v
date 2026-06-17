@@ -5,12 +5,6 @@
 
 `default_nettype none
 
-/* verilator lint_off DECLFILENAME */
-(* blackbox *) (* keep *)
-module tt_gf_cartrip_lg_nameplate ();
-endmodule
-/* verilator lint_on DECLFILENAME */
-
 
 module tt_um_LukeSilva_cartrip(
   input  wire [7:0] ui_in,    // Dedicated inputs
@@ -23,6 +17,7 @@ module tt_um_LukeSilva_cartrip(
   input  wire       rst_n     // reset_n - low to reset
 );
 
+(* blackbox *) (* keep *)
   tt_gf_cartrip_lg_nameplate nameplate();
   // VGA signals
   wire hsync;
