@@ -57,11 +57,40 @@ module tt_um_LukeSilva_cartrip(
 
   // wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
 
+  reg [6:0] msg_data[0:41*8-1];
+  reg [6:0] words_data[0:1023];
+  initial begin
+    $readmemh("../data/words.hex", words_data);
+    $readmemh("../data/msgs.hex", msg_data);
+  end
   //assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
   // wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
+  wire end_of_word;
+  reg [2:0] word_idx;
+  always @(posedge clk)
+    if (reset || !hsync)
+        word_idx <= 0;
+    else if (video_active && pix_x[3:0] == 4'he && end_of_word && word_idx < 3'h7)
+        word_idx <=word_idx + 1;
+
+  reg [3:0] r_cur_letter;
+  always @(posedge clk)
+    if (reset || !hsync)
+        r_cur_letter <= 0;
+    else if (video_active && pix_x[3:0] == 4'he && !end_of_word)
+        r_cur_letter <= r_cur_letter + 1;
+    else if (video_active && pix_x[3:0] == 4'he && end_of_word)
+        r_cur_letter <= 0;
+  wire [6:0] word;
+  assign word = msg_data[{counter[0], pix_y[8:4], word_idx}];
+  wire [6:0] word_code;
+  assign word_code = word != 7'h40 ? words_data[{word[5:0],r_cur_letter}] : 0;
+
+  assign end_of_word = word_code == 7'h00;
   assign code =
                 // (pix_y[9:7] == 3'h0) ? ascii_code :
                 // (pix_x[8:4] < max) ?  msg_code:
+                pix_y[9] == 1'b0 ? word_code:
                 {~pix_y[6], pix_y[5:4], pix_x[7:4]};
                 // 7'h0;
 

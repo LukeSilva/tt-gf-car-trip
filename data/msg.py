@@ -1,0 +1,165 @@
+BEGIN = -1
+QUESTIONS = -2
+DINNER = -3
+MOUNTAINS = -4
+SECRET = -5
+msgs = [
+    (
+        BEGIN,
+        [
+            ("HEY MUM", "YES"),
+            ("HEY MUM", "YES WHAT IS IT"),
+            ("HEY MUM", "YES"),
+            ("HEY MUM", "YES WHAT IS IT"),
+            ("HEY DAD", "YES"),
+            ("HEY DAD", "YES SON"),
+            ("HEY DAD", "YES"),
+            ("HEY DAD", "YES SON"),
+            ("HEY DAD", "WHAT IS IT"),
+            ("HEY DAD", "YEAH"),
+            (QUESTIONS,),
+            (QUESTIONS,),
+            (QUESTIONS,),
+            ("HOW ABOUT SOME MUSIC", "OK"),
+            ("IM BORED", "OK"),
+            ("SON", "YES DAD", "WHAT DO YOU WANT FOR DINNER", DINNER),
+        ],
+    ),
+    (
+        QUESTIONS,
+        [
+            ("WHERE ARE WE GOING", "TO THE MOUNTAINS"),
+            ("WHERE ARE WE GOING", "TO THE MOUNTAINS", MOUNTAINS),
+            ("WHERE ARE WE GOING", "TO THE MOUNTAINS", MOUNTAINS),
+            ("WHERE ARE WE GOING", "TO A SECRET PLACE"),
+            ("WHERE ARE WE GOING", "TO A SECRET PLACE", SECRET),
+            ("ARE WE THERE YET", "NOT YET"),
+            ("ARE WE THERE YET", "JUST A BIT LONGER"),
+            ("ARE WE THERE YET", "NOT YET"),
+            ("ARE WE THERE YET", "JUST A BIT LONGER"),
+            ("WHEN WILL WE GET THERE", "NOT SURE"),
+            ("WHEN WILL WE GET THERE", "IN A JIFFY"),
+            ("WHEN WILL WE GET THERE", "JUST A BIT LONGER"),
+            ("WHAT IS FOR DINNER", "I DONT KNOW"),
+            ("WHAT IS FOR DINNER", "FOOD"),
+            (
+                "WHAT IS FOR DINNER",
+                "WHAT DO YOU WANT",
+                "CAN WE HAVE HAMBURGERS",
+                DINNER,
+            ),
+            (MOUNTAINS,),
+        ],
+    ),
+    (
+        MOUNTAINS,
+        [
+            ("WHERE ARE THE MOUNTAINS", "JUST UP AHEAD", "OH"),
+            (
+                "WHERE ARE THE MOUNTAINS",
+                "JUST UP AHEAD",
+                "WHERE IS JUST UP AHEAD",
+                "...",
+            ),
+            (
+                "WHERE ARE THE MOUNTAINS",
+                "JUST UP AHEAD",
+                "WHEN WILL WE GET THERE",
+                "NOT SURE",
+            ),
+            (
+                "WHERE ARE THE MOUNTAINS",
+                "JUST UP AHEAD",
+                "WHEN WILL WE GET THERE",
+                "JUST A BIT LONGER",
+            ),
+        ],
+    ),
+    (
+        SECRET,
+        [
+            ("WHERE IS THE SECRET PLACE", "ITS A SECRET", "..."),
+            ("WHERE IS THE SECRET PLACE", "ITS A SECRET", "OH"),
+            ("WHERE IS THE SECRET PLACE", "ITS A SECRET", "OH"),
+            ("WHERE IS THE SECRET PLACE", "ITS A SECRET", "WHAT IS A SECRET", "..."),
+        ],
+    ),
+    (
+        DINNER,
+        [
+            ("CAN WE HAVE HAMBURGERS", "YOU HAD THAT LAST TIME", "SO ...", "NO"),
+            ("CAN WE HAVE HAMBURGERS", "NO", "AWW"),
+            (
+                "CAN WE HAVE HAMBURGERS",
+                "YOU HAD THAT LAST TIME",
+                "CAN WE HAVE IT AGAIN",
+                "FINE",
+            ),
+            ("CAN WE HAVE HAMBURGERS", "OK", "YEAH"),
+        ],
+    ),
+]
+
+words = list()
+
+
+def get_word_id(word):
+    global words
+    if word not in words:
+        words.append(word)
+    return words.index(word)
+
+
+m_msg = list()
+
+
+def map_msg(msg):
+    global m_msg
+    if msg not in m_msg:
+        m_msg.append(msg)
+    return m_msg.index(msg)
+
+
+def map_conv(conv):
+    r = [
+        map_msg(tuple([get_word_id(word) for word in msg.split(" ")]))
+        if isinstance(msg, str)
+        else msg
+        for msg in conv
+    ]
+    if r[-1] > 0:
+        r.append(BEGIN)
+    return r
+
+
+for msg_set in msgs:
+    set_id = msg_set[0]
+
+    s = msg_set[1]
+    set_len = len(msg_set[1])
+    if set_len == 4:
+        s = s * 4
+
+    for conv in msg_set[1]:
+        m_conv = map_conv(conv)
+        print(m_conv)
+    print(set_id, set_len, len(s))
+print(m_msg, len(m_msg))
+print(words, len(words), max([len(w) for w in words]))
+
+with open("words.hex", "w") as f:
+    for word in words:
+        enc = word.encode("ascii")
+        enc += b"\0" * (16 - len(enc))
+        for c in enc:
+            f.write(f"{c:02x} ")
+        f.write("\n")
+
+with open("msgs.hex", "w") as f:
+    for msg in m_msg:
+        for i in range(8):
+            if i < len(msg):
+                f.write(f"{msg[i]:02x} ")
+            else:
+                f.write(f"{64:02x} ")
+        f.write("\n")
