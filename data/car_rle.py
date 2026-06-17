@@ -163,7 +163,7 @@ for i in range(len(palette)):
         break
 
 int_palette = [((r & 3) << 4) | ((g & 3) << 2) | (b & 3) for r, g, b in palette]
-hex_palette = " ".join([hex(c)[2:] for c in int_palette])
+hex_palette = " ".join([f"{c:02x}" for c in int_palette])
 print(hex_palette)
 with open("car_palette.hex", "w") as f:
     f.write(hex_palette)
@@ -190,7 +190,7 @@ with open("car_row_palette_id.hex", "w") as f:
 int_palette = [
     ((r & 3) << 4) | ((g & 3) << 2) | (b & 3) for p in palettes for r, g, b in p
 ]
-hex_palette = " ".join([hex(c)[2:] for c in int_palette])
+hex_palette = " ".join([f"{c:02x}" for c in int_palette])
 print(hex_palette)
 with open("car_palettes.hex", "w") as f:
     f.write(hex_palette)

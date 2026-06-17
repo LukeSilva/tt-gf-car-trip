@@ -37,9 +37,10 @@ module tt_um_LukeSilva_cartrip(
   assign uio_oe  = 0;
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in, font_color, ascii_code};
+  wire _unused_ok = &{ena, ui_in, uio_in};
 
   reg [9:0] counter;
+  wire reset = ~rst_n;
 
   hvsync_generator hvsync_gen(
     .clk(clk),
@@ -51,23 +52,12 @@ module tt_um_LukeSilva_cartrip(
     .vpos(pix_y)
   );
 
-  wire [6:0] ascii_code;
+  //wire [6:0] ascii_code;
   wire [6:0] code;
 
-/*
-  reg [255:0] msgs [3:0];
-  initial begin
-    msgs [0] = "olleH";
-    msgs [1] = "ouy era woH";
-    msgs [2] = "si eman yM";
-    msgs [3] = "avliS ekuL";
-  end
-  */
-
-//  wire [255:0] msg = msgs[counter[9:8]];
   // wire [4:0] max = counter[7] == 0 ? counter[6:2] : 5'h1f;
 
-  assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
+  //assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
   // wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
   assign code =
                 // (pix_y[9:7] == 3'h0) ? ascii_code :
@@ -158,7 +148,6 @@ module tt_um_LukeSilva_cartrip(
     $readmemh("../data/car_palettes.hex", car_palettes);
     $readmemh("../data/car_row_palette_id.hex", car_palette_ids);
     $readmemh("../data/car_image.hex", car_data);
-    // $readmemh("../data/rainbow_b.hex", rainbow_b);
   end
 
 
@@ -169,13 +158,17 @@ module tt_um_LukeSilva_cartrip(
         //int val = ((i&0x1f) | (b5 * 0x1f)) ^ (b6 * 0x1f);
   assign car_x = pix_x[9:1] - 9'd192 - {5'd0,(car_counter[3:0] | {4{car_counter[4]}}) ^ {4{car_counter[5]}}};
 
-  wire [8:0] car_y;
-  assign car_y = pix_y[9:1] - 9'd120;
+  reg [8:0] car_y;
+  always @(posedge clk) begin
+    if (reset)
+        car_y <= 0;
+    else
+        car_y <= pix_y[9:1] - 9'd120;
+  end
 
   wire [1:0] car_idx;
 
   assign car_idx = car_data[{car_y[4:0], car_x[5:0]}];
-
   wire [1:0] car_palette_id;
   assign car_palette_id = car_palette_ids[car_y[4:0]];
 
@@ -188,9 +181,15 @@ module tt_um_LukeSilva_cartrip(
   reg [5:0] r_car_color;
   always @(posedge clk)
   begin
-    r_car_valid <= car_valid;
-    r_car_color <= car_color;
+    if (reset) begin
+        r_car_valid <= 0;
+        r_car_color <= 0;
+    end else begin
+        r_car_valid <= car_valid;
+        r_car_color <= car_color;
+    end
   end
+
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
