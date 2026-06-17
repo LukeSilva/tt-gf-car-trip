@@ -17,12 +17,12 @@ msgs = [
             ("HEY DAD", "YES SON"),
             ("HEY DAD", "WHAT IS IT"),
             ("HEY DAD", "YES"),
-            (QUESTIONS,),
-            (QUESTIONS,),
-            (QUESTIONS,),
+            ("ARE WE THERE YET", "NOT YET"),
+            ("ARE WE THERE YET", "NO"),
+            ("ARE WE THERE YET", "JUST A BIT LONGER"),
+            ("WHEN WILL WE GET THERE", "I DONT KNOW"),
             ("HOW ABOUT SOME MUSIC", "OK"),
             ("IM BORED", "OK"),
-            ("SON", "YES DAD", "WHAT DO YOU WANT FOR DINNER", DINNER),
         ],
     ),
     (
@@ -56,7 +56,7 @@ msgs = [
             ("ARE WE THERE YET", "JUST A BIT LONGER"),
             ("ARE WE THERE YET", "NOT YET"),
             ("ARE WE THERE YET", "JUST A BIT LONGER"),
-            ("WHEN WILL WE GET THERE", "NOT SURE"),
+            ("WHEN WILL WE GET THERE", "I DONT KNOW"),
             ("WHEN WILL WE GET THERE", "IN A JIFFY"),
             ("WHEN WILL WE GET THERE", "JUST A BIT LONGER"),
             ("WHAT IS FOR DINNER", "I DONT KNOW"),
@@ -111,6 +111,7 @@ def map_conv(conv):
     return r
 
 
+convs = []
 for msg_set in msgs:
     set_id = msg_set[0]
 
@@ -121,6 +122,7 @@ for msg_set in msgs:
 
     for conv in msg_set[1]:
         m_conv = map_conv(conv)
+        convs.append(m_conv)
         print(m_conv)
     print(set_id, set_len, len(s))
 print(m_msg, len(m_msg))
@@ -144,4 +146,13 @@ with open("msgs.hex", "w") as f:
                 f.write(f"{msg[i]:02x} ")
             else:
                 f.write(f"{64:02x} ")
+        f.write("\n")
+
+with open("conv.hex", "w") as f:
+    for c in convs:
+        for i in range(8):
+            if i < len(c) and c[i] >= 0:
+                f.write(f"{c[i]:02x} ")
+            else:
+                f.write(f"{31:02x} ")
         f.write("\n")

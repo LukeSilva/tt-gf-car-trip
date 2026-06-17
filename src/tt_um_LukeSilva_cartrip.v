@@ -59,12 +59,30 @@ module tt_um_LukeSilva_cartrip(
 
   reg [6:0] msg_data[0:32*8-1];
   reg [6:0] words_data[0:1023];
+  reg [4:0] conv_data[0:32*8-1];
   initial begin
     $readmemh("../data/words.hex", words_data);
     $readmemh("../data/msgs.hex", msg_data);
+    $readmemh("../data/conv.hex", conv_data);
   end
-  //assign ascii_code = (pix_x[9:8] > 0 || pix_y [9:7] >0 )  ? 0 : {pix_y[6:4], pix_x[7:4]};
-  // wire [6:0] msg_code = msg[pix_x[9:4]*8 +: 7];
+
+
+  //reg [4:0] msg_id;
+
+  wire [4:0] msg_id;
+  assign msg_id = conv_data[conv_id];
+  reg [7:0] conv_id;
+  wire end_conv;
+  assign end_conv = msg_id == 5'h1f;
+  always @(posedge clk)
+    if (reset)
+      conv_id <= 0;
+    else if (counter[4:0] == 0 && !end_conv && pix_x == 0 && pix_y == 0)
+      conv_id <= {conv_id[7:3], conv_id[2:0] + 3'h1};
+    else if (counter[4:0] == 0 && end_conv && pix_x == 0 && pix_y == 0)
+      conv_id <= {~conv_id[7], conv_id[6:3] + 4'h1, 3'h0};
+
+
   wire end_of_word;
   reg [2:0] word_idx;
   always @(posedge clk)
@@ -82,9 +100,9 @@ module tt_um_LukeSilva_cartrip(
     else if (video_active && pix_x[3:0] == 4'he && end_of_word)
         r_cur_letter <= 0;
   wire [6:0] word;
-  assign word = msg_data[{pix_y[8:4], word_idx}];
+  assign word = msg_data[{msg_id, word_idx}];
   wire [6:0] word_code;
-  assign word_code = word != 7'h40 ? words_data[{word[5:0],r_cur_letter}] : 0;
+  assign word_code = word != 7'h40 && !end_conv ? words_data[{word[5:0],r_cur_letter}] : 0;
 
   assign end_of_word = word_code == 7'h00;
   assign code =
