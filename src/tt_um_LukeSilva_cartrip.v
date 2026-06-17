@@ -27,7 +27,7 @@ module tt_um_LukeSilva_cartrip(
   wire [1:0] B;
   wire video_active;
   wire [9:0] pix_x;
-  wire [9:0] pix_y;
+  (* keep *) wire [9:0] pix_y; // Yosys might be optimizing out pix_y[0]?
 
   // TinyVGA PMOD
   assign uo_out = {hsync, B[0], G[0], R[0], vsync, B[1], G[1], R[1]};
@@ -214,6 +214,6 @@ module tt_um_LukeSilva_cartrip(
   end
 
   // Suppress unused signals warning
-  wire _unused_ok_ = &{moving_x, pix_y};
+  wire _unused_ok_ = &{moving_x};
 
 endmodule
