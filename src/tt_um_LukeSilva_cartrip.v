@@ -95,7 +95,7 @@ module tt_um_LukeSilva_cartrip(
   assign conv_advance_lfsr = conv_advance && last_line && pix_x < 10'd4; // Update 4 times for 4 bits
 
   wire [4:0] msg_id;
-  assign msg_id = conv_data[conv_id];
+  assign msg_id = conv_data[r_conv_id];
   reg r_conv_turn;
   always @(posedge clk)
     if (reset)
@@ -110,6 +110,9 @@ module tt_um_LukeSilva_cartrip(
   wire [7:0] conv_id;
   assign conv_id = text_test ? {counter[2:0], pix_y[8:7], pix_y[6:4]} :
                     {r_conv_turn, lfsr[3:0], msg_y};
+  reg [7:0] r_conv_id;
+  always @(posedge clk)
+    r_conv_id <= conv_id;
 
   wire end_conv;
   assign end_conv = msg_id == 5'h1f;
