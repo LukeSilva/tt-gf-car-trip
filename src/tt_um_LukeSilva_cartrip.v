@@ -55,7 +55,7 @@ module tt_um_LukeSilva_cartrip(
   end
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in, moving_x};
+  wire _unused_ok = &{ena, ui_in, uio_in, moving_x, tree_x[0]};
 
   reg [9:0] counter;
   wire new_frame;
@@ -269,9 +269,40 @@ module tt_um_LukeSilva_cartrip(
     end
   end
 
+  reg [4:0] tree_lfsr;
+
+  localparam TREE_TAPS = 5'b10100;
+  wire tree_lfsr_bit = ^(tree_lfsr & TREE_TAPS);
+  wire tree_lfsr_advance = counter[7:0] == 8'h00 && new_frame;
+  always @(posedge clk)
+  begin
+    if (reset)
+      tree_lfsr <= 5'd5;
+    else if (tree_lfsr_advance)
+      tree_lfsr <= {tree_lfsr[3:0], tree_lfsr_bit};
+  end
+
+  wire [9:0] tree_x;
+  assign tree_x = (pix_x - {2'b00, counter[7:0]}) + 10'd32;
+  wire [9:0] tree_y;
+  wire tree_type = tree_lfsr[{1'b0, tree_x[9:8]}];
+  assign tree_y = pix_y - (tree_type ? 10'd144 : 10'd128);
+  wire tree;
+  wire tree_a;
+  wire tree_b;
+  assign tree_a = tree_y[5] && tree_x[7:5] == 0 && ((tree_x[4] ? ~tree_x[3:1] : tree_x[3:1]) >= ~tree_y[4:2]);
+  assign tree_b = tree_x[7:5] == 0 && ((tree_x[4] ? ~tree_x[3:1] : tree_x[3:1]) >= ~tree_y[5:3]);
+  assign tree = tree_type ? tree_a : tree_b;
+  wire [9:0] trunk_height;
+  assign trunk_height = 10'd64 + (tree_type ? 10'd32 : 10'd48);
+  wire tree_trunk = tree_x[7:5] == 0 && (tree_x[4:2] == 3'h3 || tree_x[4:2] == 3'h4);
+
+
 
   wire [5:0] bg_color;
-  assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
+  assign bg_color = (tree && tree_y < 10'd64) ? 6'b001000 :
+                    (tree_trunk && tree_y >= 10'd64 && tree_y < trunk_height) ? 6'b101000 :
+                    (pix_y < 10'd216) ? 6'b011111 :
                     (pix_y >= 10'd280 && pix_y <= 10'd320) ? road_color :
                     //(pix_y >= 10'd220 && pix_x < 10'h100) ? (lfsr[pix_x[7:4]] ? 6'h3f : 6'h00) :
                     (pix_y < 10'd360) ? 6'b101101 :
