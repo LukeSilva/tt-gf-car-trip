@@ -1,5 +1,7 @@
 #include <ctype.h>
 #define NO_LOWERCASE
+#define NO_SYMBOL
+#define NO_NUMBERS
 #include "font.h"
 #include <inttypes.h>
 #include <stdio.h>
