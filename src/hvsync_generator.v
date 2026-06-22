@@ -9,7 +9,7 @@ To use:
 - Add a 3-bit (or more) "rgb" output to the top level
 */
 
-module hvsync_generator(clk, reset, hsync, vsync, display_on, hpos, vpos, new_frame);
+module hvsync_generator(clk, reset, hsync, vsync, display_on, hpos, vpos, new_frame, last_line);
 
   input clk;
   input reset;
@@ -18,6 +18,7 @@ module hvsync_generator(clk, reset, hsync, vsync, display_on, hpos, vpos, new_fr
   output reg [9:0] hpos;
   output reg [9:0] vpos;
   output wire new_frame;
+  output wire last_line;
 
   // declarations for TV-simulator sync parameters
   // horizontal constants
@@ -41,6 +42,7 @@ module hvsync_generator(clk, reset, hsync, vsync, display_on, hpos, vpos, new_fr
   wire hmaxxed = (hpos == H_MAX) || reset;	// set when hpos is maximum
   wire vmaxxed = (vpos == V_MAX) || reset;	// set when vpos is maximum
   assign new_frame = vmaxxed && hmaxxed;
+  assign last_line = vmaxxed;
 
   // horizontal position counter
   always @(posedge clk)

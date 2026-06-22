@@ -40,7 +40,8 @@ module tt_um_LukeSilva_cartrip(
   wire text_test;
   assign text_test = ui_in[0];
 
-  wire lfsr_advance = ui_in[1];
+  wire conv_advance_lfsr;
+  wire lfsr_advance = ui_in[1] || conv_advance_lfsr;
   localparam TAPS = 10'b1001000000;
   wire lfsr_bit = ^(lfsr & TAPS);
   always @(posedge clk)
@@ -54,10 +55,11 @@ module tt_um_LukeSilva_cartrip(
   end
 
   // Suppress unused signals warning
-  wire _unused_ok = &{ena, ui_in, uio_in};
+  wire _unused_ok = &{ena, ui_in, uio_in, moving_x};
 
   reg [9:0] counter;
   wire new_frame;
+  wire last_line;
   hvsync_generator hvsync_gen(
     .clk(clk),
     .reset(~rst_n),
@@ -66,7 +68,8 @@ module tt_um_LukeSilva_cartrip(
     .display_on(video_active),
     .hpos(pix_x),
     .vpos(pix_y),
-    .new_frame(new_frame)
+    .new_frame(new_frame),
+    .last_line(last_line)
   );
 
   //wire [6:0] ascii_code;
@@ -86,6 +89,11 @@ module tt_um_LukeSilva_cartrip(
 
   //reg [4:0] msg_id;
 
+  wire conv_advance;
+  assign conv_advance = ui_in[2] || (counter[4:0] == 0); // TODO: Adjust conversation speed...
+
+  assign conv_advance_lfsr = conv_advance && last_line && pix_x < 10'd4; // Update 4 times for 4 bits
+
   wire [4:0] msg_id;
   assign msg_id = conv_data[conv_id];
   reg [7:0] conv_id;
@@ -96,10 +104,10 @@ module tt_um_LukeSilva_cartrip(
       conv_id <= 0;
     else if (text_test)
       conv_id <= {counter[2:0], pix_y[8:7], pix_y[6:4]};
-    else if (counter[4:0] == 0 && !end_conv && new_frame)
-      conv_id <= {conv_id[7:3], conv_id[2:0] + 3'h1};
-    else if (counter[4:0] == 0 && end_conv && new_frame)
-      conv_id <= {~conv_id[7], conv_id[6:3] + 4'h1, 3'h0};
+    else if (conv_advance && new_frame)
+      conv_id <= {~conv_id[7], lfsr[3:0], 3'h0};
+    else
+      conv_id <= {conv_id[7:3], pix_y[6:4] + 3'h1};
 
 
   wire end_of_word;
@@ -259,7 +267,8 @@ module tt_um_LukeSilva_cartrip(
 
   wire [5:0] bg_color;
   assign bg_color = (pix_y < 10'd216) ? 6'b011111 :
-                    (pix_y >= 10'd280 && pix_y <= 320) ? road_color :
+                    (pix_y >= 10'd280 && pix_y <= 10'd320) ? road_color :
+                    //(pix_y >= 10'd220 && pix_x < 10'h100) ? (lfsr[pix_x[7:4]] ? 6'h3f : 6'h00) :
                     (pix_y < 10'd360) ? 6'b101101 :
                     text_bg;
 
