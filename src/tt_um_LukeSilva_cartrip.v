@@ -90,24 +90,29 @@ module tt_um_LukeSilva_cartrip(
   //reg [4:0] msg_id;
 
   wire conv_advance;
-  assign conv_advance = ui_in[2] || (counter[4:0] == 0); // TODO: Adjust conversation speed...
+  assign conv_advance = ui_in[2] || (counter[6:0] == 0); // TODO: Adjust conversation speed...
 
   assign conv_advance_lfsr = conv_advance && last_line && pix_x < 10'd4; // Update 4 times for 4 bits
 
   wire [4:0] msg_id;
   assign msg_id = conv_data[conv_id];
-  reg [7:0] conv_id;
-  wire end_conv;
-  assign end_conv = msg_id == 5'h1f;
+  reg r_conv_turn;
   always @(posedge clk)
     if (reset)
-      conv_id <= 0;
-    else if (text_test)
-      conv_id <= {counter[2:0], pix_y[8:7], pix_y[6:4]};
+        r_conv_turn <= 0;
     else if (conv_advance && new_frame)
-      conv_id <= {~conv_id[7], lfsr[3:0], 3'h0};
-    else
-      conv_id <= {conv_id[7:3], pix_y[6:4] + 3'h1};
+        r_conv_turn <= ~r_conv_turn;
+
+  wire [2:0] msg_y;
+  assign  msg_y = pix_y[6:4] + 3'h1;
+  wire msg_visible;
+  assign msg_visible = ui_in[2] || (msg_y < counter[6:4]);
+  wire [7:0] conv_id;
+  assign conv_id = text_test ? {counter[2:0], pix_y[8:7], pix_y[6:4]} :
+                    {r_conv_turn, lfsr[3:0], msg_y};
+
+  wire end_conv;
+  assign end_conv = msg_id == 5'h1f;
 
 
   wire end_of_word;
@@ -176,7 +181,7 @@ module tt_um_LukeSilva_cartrip(
         r_r_font <= 0;
     end else begin
         r_font <= font_row;
-        if (r_rom_x < 3'd6)
+        if (r_rom_x < 3'd6 && (msg_visible || text_test))
             r_r_font <= r_font[r_rom_x];
         else
             r_r_font <= 0;

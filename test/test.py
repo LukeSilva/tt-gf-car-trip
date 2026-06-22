@@ -64,7 +64,7 @@ async def test_project(dut):
     V_BACK = 33
 
     # Number of frames to capture
-    CAPTURE_FRAMES = 9
+    CAPTURE_FRAMES = 12
 
     # Derived constants
     H_SYNC_START = H_DISPLAY + H_FRONT
@@ -157,7 +157,7 @@ async def test_project(dut):
         frame = await capture_frame(i)
         frame.save(f"output/frame{i}.png")
         if i == 7:
-            dut.ui_in.value = 0x00
+            dut.ui_in.value = 0x04
 
 
 @cocotb.test()
