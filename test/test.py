@@ -9,6 +9,45 @@ from PIL import Image, ImageChops
 
 
 @cocotb.test()
+async def test_lfsr(dut):
+
+    def lfsr_10_nxt(lfsr):
+        # {\displaystyle x^{10}+x^{7}+1}
+        bit = (lfsr >> 9 ^ (lfsr >> 6)) & 1
+        lfsr = ((lfsr << 1) & 1023) | bit
+        return lfsr
+
+    # Set clock period to 40 ns (25 MHz)
+    CLOCK_PERIOD = 40
+    # Set up the clock
+    clock = Clock(dut.clk, CLOCK_PERIOD, unit="ns")
+    cocotb.start_soon(clock.start())
+
+    # Reset the design
+    dut.ena.value = 1
+    dut.ui_in.value = 0x02
+    dut.uio_in.value = 0
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 10)
+    dut.rst_n.value = 1
+    lfsr = 1
+    period = 0
+    await ClockCycles(dut.clk, 1)
+    assert int(dut.uio_out.value[3:0]) == lfsr & 15
+    lfsr = lfsr_10_nxt(lfsr)
+
+    while lfsr != 1:
+        await ClockCycles(dut.clk, 1)
+        dut_lfsr = int(dut.uio_out.value[3:0])
+        dut._log.info(f"LFSR low 4 bits = {dut_lfsr}, expecting {lfsr & 15}")
+        # print(int(dut.uio_out.value[3:0]), lfsr & 15, lfsr)
+        assert int(dut.uio_out.value[3:0]) == lfsr & 15
+        lfsr = lfsr_10_nxt(lfsr)
+        period += 1
+    dut._log.info(f"LFSR period = {period}")
+
+
+@cocotb.test()
 async def test_project(dut):
 
     # Set clock period to 40 ns (25 MHz)

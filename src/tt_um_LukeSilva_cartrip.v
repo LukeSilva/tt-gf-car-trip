@@ -28,21 +28,35 @@ module tt_um_LukeSilva_cartrip(
   wire video_active;
   wire [9:0] pix_x;
   wire [9:0] pix_y;
+  wire reset = ~rst_n;
 
   // TinyVGA PMOD
   assign uo_out = {hsync, B[0], G[0], R[0], vsync, B[1], G[1], R[1]};
 
+  reg [9:0] lfsr;
   // Unused outputs assigned to 0.
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+  assign uio_out = {4'h0, lfsr[3:0]};
+  assign uio_oe  = 8'hf;
   wire text_test;
   assign text_test = ui_in[0];
+
+  wire lfsr_advance = ui_in[1];
+  localparam TAPS = 10'b1001000000;
+  wire lfsr_bit = ^(lfsr & TAPS);
+  always @(posedge clk)
+  begin
+    if (reset) begin
+      lfsr <= 10'd1;
+    end
+    else if (lfsr_advance) begin
+      lfsr <= {lfsr[8:0], lfsr_bit};
+    end
+  end
 
   // Suppress unused signals warning
   wire _unused_ok = &{ena, ui_in, uio_in};
 
   reg [9:0] counter;
-  wire reset = ~rst_n;
   wire new_frame;
   hvsync_generator hvsync_gen(
     .clk(clk),
