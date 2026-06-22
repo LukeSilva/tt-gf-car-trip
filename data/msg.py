@@ -142,6 +142,7 @@ with open("words.hex", "w") as f:
         f.write("\n")
 
 with open("msgs.hex", "w") as f:
+    n = 0
     for msg in m_msg:
         for i in range(8):
             if i < len(msg):
@@ -149,6 +150,12 @@ with open("msgs.hex", "w") as f:
             else:
                 f.write(f"{64:02x} ")
         f.write("\n")
+        n += 1
+    while n < 32:
+        for i in range(8):
+            f.write(f"{64:02x} ")
+        f.write("\n")
+        n += 1
 
 with open("conv.hex", "w") as f:
     for c in convs:

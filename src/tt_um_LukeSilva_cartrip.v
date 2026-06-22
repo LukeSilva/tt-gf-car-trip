@@ -41,7 +41,7 @@ module tt_um_LukeSilva_cartrip(
 
   reg [9:0] counter;
   wire reset = ~rst_n;
-
+  wire new_frame;
   hvsync_generator hvsync_gen(
     .clk(clk),
     .reset(~rst_n),
@@ -49,7 +49,8 @@ module tt_um_LukeSilva_cartrip(
     .vsync(vsync),
     .display_on(video_active),
     .hpos(pix_x),
-    .vpos(pix_y)
+    .vpos(pix_y),
+    .new_frame(new_frame)
   );
 
   //wire [6:0] ascii_code;
@@ -77,9 +78,9 @@ module tt_um_LukeSilva_cartrip(
   always @(posedge clk)
     if (reset)
       conv_id <= 0;
-    else if (counter[4:0] == 0 && !end_conv && pix_x == 0 && pix_y == 0)
+    else if (counter[4:0] == 0 && !end_conv && new_frame)
       conv_id <= {conv_id[7:3], conv_id[2:0] + 3'h1};
-    else if (counter[4:0] == 0 && end_conv && pix_x == 0 && pix_y == 0)
+    else if (counter[4:0] == 0 && end_conv && new_frame)
       conv_id <= {~conv_id[7], conv_id[6:3] + 4'h1, 3'h0};
 
 
