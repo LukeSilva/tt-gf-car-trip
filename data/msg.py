@@ -127,8 +127,11 @@ print(m_msg, len(m_msg))
 print(words, len(words), max([len(w) for w in words]))
 
 with open("words.hex", "w") as f:
-    for word in words:
-        enc = word.encode("ascii")
+    for i in range(2 ** (len(words) - 1).bit_length()):
+        if i < len(words):
+            enc = words[i].encode("ascii")
+        else:
+            enc = b""
         enc += b"\0" * (16 - len(enc))
         for c in enc:
             f.write(f"{c:02x} ")
