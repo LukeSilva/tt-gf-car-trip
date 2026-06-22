@@ -91,8 +91,8 @@ module tt_um_LukeSilva_cartrip(
   wire end_of_word;
   reg [2:0] word_idx;
   always @(posedge clk)
-    if (reset || !hsync)
-        word_idx <= 0;
+    if (reset || pix_x == 10'he)
+        word_idx <= 3'h0;
     else if (video_active && pix_x[3:0] == 4'he && end_of_word && word_idx < 3'h7)
         word_idx <=word_idx + 1;
 
