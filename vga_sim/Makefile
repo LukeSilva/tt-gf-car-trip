@@ -3,7 +3,8 @@
 # Authors: Uri Shaked, James Ross
 
 TOP_MODULE:=$(shell awk -F'"' '/top_module:/ {print $$2}' ../info.yaml)
-VERILOG_SOURCES = ../src/*.v
+VERILOG_SOURCES = ../src/*.v \
+../ip/tt_gf_cartrip_lg_nameplate/tt_gf_cartrip_lg_nameplate.v
 
 VFLAGS = -Wall -Wpedantic --default-language 1364-2005 --x-assign fast --x-initial fast --noassert --top-module $(TOP_MODULE)
 CFLAGS = -flto -O3 -march=native -DTOP_MODULE=V$(TOP_MODULE) -Iobj_dir -I/usr/share/verilator/include -include V$(TOP_MODULE).h
