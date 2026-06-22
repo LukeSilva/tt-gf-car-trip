@@ -25,7 +25,7 @@ async def test_project(dut):
     V_BACK = 33
 
     # Number of frames to capture
-    CAPTURE_FRAMES = 3
+    CAPTURE_FRAMES = 9
 
     # Derived constants
     H_SYNC_START = H_DISPLAY + H_FRONT
@@ -52,7 +52,7 @@ async def test_project(dut):
 
     # Reset the design
     dut.ena.value = 1
-    dut.ui_in.value = 0
+    dut.ui_in.value = 0x01
     dut.uio_in.value = 0
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 10)
@@ -117,8 +117,8 @@ async def test_project(dut):
     for i in range(CAPTURE_FRAMES):
         frame = await capture_frame(i)
         frame.save(f"output/frame{i}.png")
-        if i == 1:
-            dut.ui_in.value = 0xFF
+        if i == 7:
+            dut.ui_in.value = 0x00
 
 
 @cocotb.test()

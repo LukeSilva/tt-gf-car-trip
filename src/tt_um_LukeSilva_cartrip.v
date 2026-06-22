@@ -35,6 +35,8 @@ module tt_um_LukeSilva_cartrip(
   // Unused outputs assigned to 0.
   assign uio_out = 0;
   assign uio_oe  = 0;
+  wire text_test;
+  assign text_test = ui_in[0];
 
   // Suppress unused signals warning
   wire _unused_ok = &{ena, ui_in, uio_in};
@@ -78,6 +80,8 @@ module tt_um_LukeSilva_cartrip(
   always @(posedge clk)
     if (reset)
       conv_id <= 0;
+    else if (text_test)
+      conv_id <= {counter[2:0], pix_y[8:7], pix_y[6:4]};
     else if (counter[4:0] == 0 && !end_conv && new_frame)
       conv_id <= {conv_id[7:3], conv_id[2:0] + 3'h1};
     else if (counter[4:0] == 0 && end_conv && new_frame)
