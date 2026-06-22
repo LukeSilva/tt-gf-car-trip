@@ -128,8 +128,10 @@ for msg_set in msgs:
 print(m_msg, len(m_msg))
 print(words, len(words), max([len(w) for w in words]))
 
+n_words = 2 ** (len(words) - 1).bit_length()
+print("n_words", n_words)
 with open("words.hex", "w") as f:
-    for i in range(2 ** (len(words) - 1).bit_length()):
+    for i in range(n_words):
         if i < len(words):
             enc = words[i].encode("ascii")
         else:
